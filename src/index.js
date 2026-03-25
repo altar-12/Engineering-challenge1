@@ -39,27 +39,36 @@ const checkPort = async (port, maxPort = 65535) => {
     // Routes
     app.use('/api/items', require('./routes/items'));
     app.use('/api/stats', require('./routes/stats'));
+    app.use('/api/balanceReadApiTest', require('./routes/balance.js'));
+
+    // for error handling
+    app.use((err, req, res, next) => {
+        const message = err.message || 'An unexpected error occurred';
+        return res.status(err.status || 500).json({ error: message });
+    });
 
     require('./config/dbHandler.js').connect();
 
     /**
-     * @route    [HTTP_METHOD] /api/endpoint
-     * @desc     [Short summary of what this endpoint does, e.g., Reads or sets value in smart contract]
-     * @author   [Your Name]
-     * @access   [public/private/auth-required]
-     * @param    {Request}  req  - Express request object. [Describe relevant body/query/params fields]
-     * @param    {Response} res  - Express response object.
-     * @returns  {JSON}          [Describe the JSON structure returned]
-     * @throws   [Error conditions, e.g., 400 on invalid input, 500 on contract failure]
+     * @route    GET /api/balanceReadApiTest
+     * @desc     Reads the USDC balance of a given EVM address and the total USDC supply from the smart contract
+     * @author   Shubham
+     * @access   Public
+     * @param    {string}   req.query.userAddress  - A valid EVM wallet address (e.g. 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045)
+     * @param    {Response} res                    - Express response object.
+     *                                               200: { "userBalance": string, "totalSupply": string }
+     *                                               400: { "error": "Invalid Ethereum address {address value}" }
+     * @returns  {JSON}          Returns the USDC balance of the provided address and the total USDC supply, both as formatted strings with 6 decimal precision.
+     * @throws   400 if `userAddress` query param is missing or not a valid EVM address
      *
      * @example
      * // Example request
-     * curl -X POST http://localhost:3001/contract/value -H "Content-Type: application/json" -d '{"value": 42}'
+     * curl -X GET "http://localhost:3001/api/balanceReadApiTest?userAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
      *
      * // Example response
      * {
-     *   "message": "Value updated",
-     *   "txHash": "0x..."
+     *   "userBalance": "5258165986.910826",
+     *   "totalSupply": "55437817433.232331"
      * }
      */
 
