@@ -39,15 +39,6 @@ const checkPort = async (port, maxPort = 65535) => {
     // Routes
     app.use('/api/items', require('./routes/items'));
     app.use('/api/stats', require('./routes/stats'));
-    app.use('/api/balanceReadApiTest', require('./routes/balance.js'));
-
-    // for error handling
-    app.use((err, req, res, next) => {
-        const message = err.message || 'An unexpected error occurred';
-        return res.status(err.status || 500).json({ error: message });
-    });
-
-    require('./config/dbHandler.js').connect();
 
     /**
      * @route    GET /api/balanceReadApiTest
@@ -71,6 +62,15 @@ const checkPort = async (port, maxPort = 65535) => {
      *   "totalSupply": "55437817433.232331"
      * }
      */
+    app.use('/api/balanceReadApiTest', require('./routes/balance.js'));
+
+    // for error handling
+    app.use((err, req, res, next) => {
+        const message = err.message || 'An unexpected error occurred';
+        return res.status(err.status || 500).json({ error: message });
+    });
+
+    require('./config/dbHandler.js').connect();
 
     // Serve static files in production
     if (process.env.NODE_ENV === 'production') {
